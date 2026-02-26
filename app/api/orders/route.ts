@@ -1,67 +1,25 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api/response';
-import { requireAuth } from '@/lib/api/auth-helpers';
 
-// GET /api/orders - Get user's orders
-export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAuth();
-
-    const orders = await prisma.order.findMany({
-      where: { userId: user.id },
-      include: {
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-            variant: {
-              select: {
-                size: true,
-                color: true,
-              },
-            },
-          },
-        },
-        shippingAddress: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return successResponse(orders);
-  } catch (error: any) {
-    console.error('Orders fetch error:', error);
-    
-    if (error.message === 'Unauthorized') {
-      return errorResponse(error.message, 401);
-    }
-    
-    return errorResponse('Failed to fetch orders', 500);
-  }
-}
-
-// POST /api/orders - Create order
+// POST /api/orders - Create guest order
 const createOrderSchema = z.object({
+  guestEmail: z.string().email(),
+  guestName: z.string().min(1),
   items: z.array(z.object({
     productId: z.string(),
     variantId: z.string(),
     quantity: z.number().int().positive(),
   })),
   shippingAddress: z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-    street: z.string(),
+    fullName: z.string(),
+    phone: z.string(),
+    addressLine1: z.string(),
+    addressLine2: z.string().optional(),
     city: z.string(),
     state: z.string(),
-    zipCode: z.string(),
+    postalCode: z.string(),
     country: z.string(),
-    phone: z.string().optional(),
   }),
   shippingMethod: z.string(),
   couponCode: z.string().optional(),
@@ -70,16 +28,17 @@ const createOrderSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth();
     const body = await request.json();
     
     const validation = createOrderSchema.safeParse(body);
     if (!validation.success) {
-      const errors = validation.error.flatten().fieldErrors;
-      return validationErrorResponse(errors as Record<string, string[]>);
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
 
-    const { items, shippingAddress, shippingMethod, couponCode, notes } = validation.data;
+    const { guestEmail, guestName, items, shippingAddress, shippingMethod, couponCode, notes } = validation.data;
 
     // Fetch products and variants
     const orderItems = await Promise.all(
@@ -145,20 +104,13 @@ export async function POST(request: NextRequest) {
     const tax = (subtotal - discount) * 0.08; // 8% tax
     const total = subtotal - discount + shippingCost + tax;
 
-    // Create address
-    const address = await prisma.address.create({
-      data: {
-        ...shippingAddress,
-        userId: user.id,
-      },
-    });
-
     // Create order
     const order = await prisma.order.create({
       data: {
-        userId: user.id,
+        guestEmail,
+        guestName,
         status: 'PENDING',
-        addressId: address.id,
+        shippingAddress: JSON.stringify(shippingAddress),
         shippingMethod,
         shippingCost,
         subtotal,
@@ -173,7 +125,6 @@ export async function POST(request: NextRequest) {
       },
       include: {
         items: true,
-        shippingAddress: true,
       },
     });
 
@@ -187,14 +138,12 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    return successResponse(order, 201);
+    return NextResponse.json({ success: true, data: order }, { status: 201 });
   } catch (error: any) {
     console.error('Order creation error:', error);
-    
-    if (error.message === 'Unauthorized') {
-      return errorResponse(error.message, 401);
-    }
-    
-    return errorResponse(error.message || 'Failed to create order', 500);
+    return NextResponse.json(
+      { error: error.message || 'Failed to create order' },
+      { status: 500 }
+    );
   }
 }

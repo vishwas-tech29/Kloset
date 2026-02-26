@@ -1,10 +1,7 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { successResponse, errorResponse, validationErrorResponse } from '@/lib/api/response';
-import { requireAuth } from '@/lib/api/auth-helpers';
-import { checkRateLimit, checkoutRateLimit } from '@/lib/rate-limit';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -16,43 +13,39 @@ const checkoutSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const user = await requireAuth();
-    const { success } = await checkRateLimit(user.id, checkoutRateLimit);
-    
-    if (!success) {
-      return errorResponse('Too many checkout attempts. Please try again later.', 429);
-    }
-
     const body = await request.json();
     const validation = checkoutSchema.safeParse(body);
 
     if (!validation.success) {
-      const errors = validation.error.flatten().fieldErrors;
-      return validationErrorResponse(errors as Record<string, string[]>);
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
 
     const { orderId } = validation.data;
 
     // Fetch order
     const order = await prisma.order.findUnique({
-      where: { id: orderId, userId: user.id },
+      where: { id: orderId },
       include: {
         items: {
           include: {
             product: true,
           },
         },
-        shippingAddress: true,
       },
     });
 
     if (!order) {
-      return errorResponse('Order not found', 404);
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     if (order.stripePaymentId) {
-      return errorResponse('Order already has a payment session', 400);
+      return NextResponse.json(
+        { error: 'Order already has a payment session' },
+        { status: 400 }
+      );
     }
 
     // Create Stripe line items
@@ -101,13 +94,12 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXTAUTH_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/checkout?canceled=true`,
-      customer_email: user.email,
+      success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/checkout?canceled=true`,
+      customer_email: order.guestEmail,
       client_reference_id: orderId,
       metadata: {
         orderId,
-        userId: user.id,
       },
     });
 
@@ -117,17 +109,18 @@ export async function POST(request: NextRequest) {
       data: { stripePaymentId: session.id },
     });
 
-    return successResponse({
-      sessionId: session.id,
-      url: session.url,
+    return NextResponse.json({
+      success: true,
+      data: {
+        sessionId: session.id,
+        url: session.url,
+      },
     });
   } catch (error: any) {
     console.error('Checkout session error:', error);
-    
-    if (error.message === 'Unauthorized') {
-      return errorResponse(error.message, 401);
-    }
-    
-    return errorResponse('Failed to create checkout session', 500);
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    );
   }
 }

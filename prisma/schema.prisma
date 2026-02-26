@@ -7,59 +7,6 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String         @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  role          String         @default("CUSTOMER")
-  addresses     Address[]
-  orders        Order[]
-  reviews       Review[]
-  wishlist      WishlistItem[]
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model Product {
   id            String         @id @default(cuid())
   name          String
@@ -73,7 +20,6 @@ model Product {
   tags          Tag[]
   variants      Variant[]
   reviews       Review[]
-  wishlistItems WishlistItem[]
   orderItems    OrderItem[]
   isPublished   Boolean        @default(false)
   isFeatured    Boolean        @default(false)
@@ -120,13 +66,11 @@ model Tag {
 
 model Order {
   id              String      @id @default(cuid())
-  user            User?       @relation(fields: [userId], references: [id])
-  userId          String?
-  guestEmail      String?
+  guestEmail      String
+  guestName       String
   status          String      @default("PENDING")
   items           OrderItem[]
-  shippingAddress Address     @relation(fields: [addressId], references: [id])
-  addressId       String
+  shippingAddress String
   shippingMethod  String
   shippingCost    Float
   subtotal        Float
@@ -155,44 +99,17 @@ model OrderItem {
   image     String
 }
 
-model Address {
-  id        String  @id @default(cuid())
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  firstName String
-  lastName  String
-  street    String
-  city      String
-  state     String
-  zipCode   String
-  country   String
-  phone     String?
-  isDefault Boolean @default(false)
-  orders    Order[]
-}
-
 model Review {
   id         String   @id @default(cuid())
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId  String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+  guestName  String
+  guestEmail String
   rating     Int
   title      String
   body       String
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())
-}
-
-model WishlistItem {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId String
-  createdAt DateTime @default(now())
-
-  @@unique([userId, productId])
 }
 
 model Coupon {

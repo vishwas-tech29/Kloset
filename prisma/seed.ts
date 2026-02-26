@@ -1,42 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Starting seed...');
-
-  // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 12);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@kloset.com' },
-    update: {},
-    create: {
-      email: 'admin@kloset.com',
-      name: 'Admin User',
-      password: adminPassword,
-      role: 'ADMIN',
-      emailVerified: new Date(),
-    },
-  });
-
-  console.log('Created admin user:', admin.email);
-
-  // Create test customer
-  const customerPassword = await bcrypt.hash('customer123', 12);
-  const customer = await prisma.user.upsert({
-    where: { email: 'customer@example.com' },
-    update: {},
-    create: {
-      email: 'customer@example.com',
-      name: 'Test Customer',
-      password: customerPassword,
-      role: 'CUSTOMER',
-      emailVerified: new Date(),
-    },
-  });
-
-  console.log('Created customer user:', customer.email);
 
   // Create categories
   const categories = await Promise.all([

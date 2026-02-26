@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Heart, User, Menu } from 'lucide-react';
+import { ShoppingCart, Heart, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useWishlistStore } from '@/lib/store/wishlistStore';
@@ -49,23 +49,15 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <SearchBar />
-            
-            <Link href="/account">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
 
-            <Link href="/account/wishlist">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className="h-5 w-5" />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-white flex items-center justify-center animate-in zoom-in-50">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            <Button variant="ghost" size="icon" className="relative">
+              <Heart className="h-5 w-5" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-white flex items-center justify-center animate-in zoom-in-50">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Button>
 
             <Button variant="ghost" size="icon" className="relative" onClick={toggleCartDrawer}>
               <ShoppingCart className="h-5 w-5" />

@@ -58,15 +58,6 @@ export function MobileMenu() {
                 </Link>
               ))}
             </nav>
-
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2">
-              <Link href="/login" onClick={toggleMobileMenu}>
-                <Button variant="outline" className="w-full">Sign In</Button>
-              </Link>
-              <Link href="/register" onClick={toggleMobileMenu}>
-                <Button className="w-full">Create Account</Button>
-              </Link>
-            </div>
           </motion.div>
         </>
       )}

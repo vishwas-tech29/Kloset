@@ -30,8 +30,10 @@ export default function CheckoutPage() {
 
   const onSubmit = async (data: CheckoutInput) => {
     try {
-      // Simulate API call
+      // Simulate order processing
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Clear cart and redirect to success
       clearCart();
       toast.success('Order placed successfully!');
       router.push('/checkout/success');
@@ -54,7 +56,7 @@ export default function CheckoutPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Step 1: Contact & Shipping */}
             <div className="border rounded-lg p-6">
-              <h2 className="font-semibold text-xl mb-6">1. Contact & Shipping Information</h2>
+              <h2 className="font-semibold text-xl mb-6">Contact & Shipping Information</h2>
               
               <div className="space-y-4">
                 <div>
@@ -149,7 +151,7 @@ export default function CheckoutPage() {
 
             {/* Step 2: Shipping Method */}
             <div className="border rounded-lg p-6">
-              <h2 className="font-semibold text-xl mb-6">2. Shipping Method</h2>
+              <h2 className="font-semibold text-xl mb-6">Shipping Method</h2>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
                   <input
@@ -177,7 +179,7 @@ export default function CheckoutPage() {
 
             {/* Step 3: Payment */}
             <div className="border rounded-lg p-6">
-              <h2 className="font-semibold text-xl mb-6">3. Payment</h2>
+              <h2 className="font-semibold text-xl mb-6">Payment</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Card Number</label>
