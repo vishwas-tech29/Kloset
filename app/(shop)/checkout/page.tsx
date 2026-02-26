@@ -10,35 +10,79 @@ import { useCartStore } from '@/lib/store/cartStore';
 import { formatPrice } from '@/lib/utils/formatPrice';
 import { checkoutSchema, type CheckoutInput } from '@/lib/validations/checkoutSchema';
 import toast from 'react-hot-toast';
+import { Loader2, CreditCard, Lock } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { items, getSubtotal, clearCart } = useCartStore();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
   });
 
   const subtotal = getSubtotal();
-  const shipping = subtotal > 50 ? 0 : 5.99;
-  const total = subtotal + shipping;
+  const shippingMethod = watch('shippingMethod', 'standard');
+  const shipping = shippingMethod === 'express' ? 15.99 : subtotal > 50 ? 0 : 5.99;
+  const tax = subtotal * 0.08; // 8% tax
+  const total = subtotal + shipping + tax;
 
   const onSubmit = async (data: CheckoutInput) => {
+    setIsProcessing(true);
+    
     try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Clear cart and redirect to success
-      clearCart();
-      toast.success('Order placed successfully!');
-      router.push('/checkout/success');
-    } catch (error) {
-      toast.error('Something went wrong');
+      // Step 1: Create order in database
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestEmail: data.email,
+          guestName: data.shippingAddress.fullName,
+          items: items.map(item => ({
+            productId: item.productId || item.id,
+            variantId: item.variantId || item.id,
+            quantity: item.quantity,
+          })),
+          shippingAddress: data.shippingAddress,
+          shippingMethod: data.shippingMethod,
+        }),
+      });
+
+      if (!orderResponse.ok) {
+        const error = await orderResponse.json();
+        throw new Error(error.error || 'Failed to create order');
+      }
+
+      const { data: order } = await orderResponse.json();
+
+      // Step 2: Create Stripe checkout session
+      const checkoutResponse = await fetch('/api/checkout/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+
+      if (!checkoutResponse.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { data: session } = await checkoutResponse.json();
+
+      // Step 3: Redirect to Stripe
+      if (session.url) {
+        window.location.href = session.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      toast.error(error.message || 'Failed to process checkout');
+      setIsProcessing(false);
     }
   };
 
@@ -65,6 +109,7 @@ export default function CheckoutPage() {
                     type="email"
                     {...register('email')}
                     placeholder="your@email.com"
+                    disabled={isProcessing}
                   />
                   {errors.email && (
                     <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
@@ -74,7 +119,7 @@ export default function CheckoutPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Full Name</label>
-                    <Input {...register('shippingAddress.fullName')} />
+                    <Input {...register('shippingAddress.fullName')} disabled={isProcessing} />
                     {errors.shippingAddress?.fullName && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.shippingAddress.fullName.message}
@@ -83,7 +128,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Phone</label>
-                    <Input {...register('shippingAddress.phone')} />
+                    <Input {...register('shippingAddress.phone')} disabled={isProcessing} />
                     {errors.shippingAddress?.phone && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.shippingAddress.phone.message}
@@ -94,7 +139,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Address Line 1</label>
-                  <Input {...register('shippingAddress.addressLine1')} />
+                  <Input {...register('shippingAddress.addressLine1')} disabled={isProcessing} />
                   {errors.shippingAddress?.addressLine1 && (
                     <p className="text-sm text-destructive mt-1">
                       {errors.shippingAddress.addressLine1.message}
@@ -104,13 +149,13 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Address Line 2 (Optional)</label>
-                  <Input {...register('shippingAddress.addressLine2')} />
+                  <Input {...register('shippingAddress.addressLine2')} disabled={isProcessing} />
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">City</label>
-                    <Input {...register('shippingAddress.city')} />
+                    <Input {...register('shippingAddress.city')} disabled={isProcessing} />
                     {errors.shippingAddress?.city && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.shippingAddress.city.message}
@@ -119,7 +164,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">State</label>
-                    <Input {...register('shippingAddress.state')} />
+                    <Input {...register('shippingAddress.state')} disabled={isProcessing} />
                     {errors.shippingAddress?.state && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.shippingAddress.state.message}
@@ -128,7 +173,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Postal Code</label>
-                    <Input {...register('shippingAddress.postalCode')} />
+                    <Input {...register('shippingAddress.postalCode')} disabled={isProcessing} />
                     {errors.shippingAddress?.postalCode && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.shippingAddress.postalCode.message}
@@ -139,7 +184,11 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Country</label>
-                  <Input {...register('shippingAddress.country')} defaultValue="United States" />
+                  <Input 
+                    {...register('shippingAddress.country')} 
+                    defaultValue="United States" 
+                    disabled={isProcessing}
+                  />
                   {errors.shippingAddress?.country && (
                     <p className="text-sm text-destructive mt-1">
                       {errors.shippingAddress.country.message}
@@ -153,21 +202,31 @@ export default function CheckoutPage() {
             <div className="border rounded-lg p-6">
               <h2 className="font-semibold text-xl mb-6">Shipping Method</h2>
               <div className="space-y-3">
-                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
+                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
                   <input
                     type="radio"
                     {...register('shippingMethod')}
                     value="standard"
                     defaultChecked
+                    disabled={isProcessing}
+                    className="w-4 h-4"
                   />
                   <div className="flex-1">
                     <p className="font-medium">Standard Shipping</p>
                     <p className="text-sm text-muted-foreground">5-7 business days</p>
                   </div>
-                  <span className="font-semibold">{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
+                  <span className="font-semibold">
+                    {subtotal > 50 ? 'FREE' : formatPrice(5.99)}
+                  </span>
                 </label>
-                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-muted">
-                  <input type="radio" {...register('shippingMethod')} value="express" />
+                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                  <input 
+                    type="radio" 
+                    {...register('shippingMethod')} 
+                    value="express" 
+                    disabled={isProcessing}
+                    className="w-4 h-4"
+                  />
                   <div className="flex-1">
                     <p className="font-medium">Express Shipping</p>
                     <p className="text-sm text-muted-foreground">2-3 business days</p>
@@ -177,30 +236,45 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Step 3: Payment */}
-            <div className="border rounded-lg p-6">
-              <h2 className="font-semibold text-xl mb-6">Payment</h2>
-              <div className="space-y-4">
+            {/* Payment Info */}
+            <div className="border rounded-lg p-6 bg-muted/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Card Number</label>
-                  <Input placeholder="1234 5678 9012 3456" />
+                  <h2 className="font-semibold text-xl">Secure Payment</h2>
+                  <p className="text-sm text-muted-foreground">Powered by Stripe</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Expiry Date</label>
-                    <Input placeholder="MM/YY" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">CVV</label>
-                    <Input placeholder="123" />
-                  </div>
-                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Lock className="h-4 w-4" />
+                <span>Your payment information is encrypted and secure</span>
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full">
-              Place Order
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="w-full" 
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-5 w-5" />
+                  Proceed to Payment
+                </>
+              )}
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              By placing your order, you agree to our Terms of Service and Privacy Policy
+            </p>
           </form>
         </div>
 
@@ -233,10 +307,20 @@ export default function CheckoutPage() {
                 <span>Shipping</span>
                 <span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
               </div>
+              <div className="flex justify-between text-sm">
+                <span>Tax (8%)</span>
+                <span>{formatPrice(tax)}</span>
+              </div>
               <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-primary/5 rounded-lg">
+              <p className="text-sm text-center">
+                <span className="font-semibold">Free shipping</span> on orders over $50
+              </p>
             </div>
           </div>
         </div>

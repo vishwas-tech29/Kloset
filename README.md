@@ -49,16 +49,20 @@ A modern, production-ready e-commerce platform built with Next.js 14, featuring 
 npm install
 ```
 
-2. **Set up environment variables**:
-Create `.env.local`:
+## Environment Variables
+
+Create `.env.local` file in the root directory:
+
 ```env
-# Stripe (required for payments)
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
+# Stripe Payment Gateway (required)
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 
 # Optional
 NEXT_PUBLIC_URL=http://localhost:3000
 ```
+
+See `STRIPE_SETUP.md` for detailed Stripe configuration instructions.
 
 3. **Set up database**:
 ```bash
@@ -136,7 +140,32 @@ Simplified schema for guest shopping:
 
 See `NO_AUTH_SETUP.md` for detailed schema information.
 
-## Tech Stack
+## Payment Gateway
+
+This store uses **Stripe** for secure payment processing.
+
+### Features:
+- Secure checkout hosted by Stripe
+- Support for all major credit cards
+- Real-time payment processing
+- Automatic order status updates via webhooks
+- Test mode for development
+- PCI compliance handled by Stripe
+
+### Setup:
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Get your API keys from the Stripe Dashboard
+3. Add keys to `.env.local`
+4. Set up webhooks for order status updates
+
+See `STRIPE_SETUP.md` for complete setup instructions and `PAYMENT_TESTING.md` for testing guide.
+
+### Test Cards:
+- Success: `4242 4242 4242 4242`
+- Decline: `4000 0000 0000 9995`
+- Use any future expiry date and any 3-digit CVC
+
+
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
