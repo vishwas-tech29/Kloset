@@ -1,3 +1,6 @@
+// SQLite version - easier for local development
+// To use this: rename to schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
