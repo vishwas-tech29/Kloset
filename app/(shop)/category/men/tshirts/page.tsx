@@ -37,7 +37,7 @@ export default function TShirtsPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <h1 className="font-serif text-4xl font-bold mb-4">Men's T-Shirts</h1>
+        <h1 className="font-serif text-4xl font-bold mb-4">Men&apos;s T-Shirts</h1>
         <p className="text-muted-foreground text-lg">
           Essential tees crafted from premium cotton for everyday comfort
         </p>

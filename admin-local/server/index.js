@@ -90,7 +90,7 @@ if (process.env.NODE_ENV !== 'test') {
         // Desktop notification
         notifier.notify({
           title: '🛍️ New Order Received!',
-          message: `Order #${order.id.slice(-8).toUpperCase()} - $${order.total}`,
+          message: `Order #${order.id.slice(-8).toUpperCase()} - ${order.total}`,
           sound: true,
           wait: false
         });

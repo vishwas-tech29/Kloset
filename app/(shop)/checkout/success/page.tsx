@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Package, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useSearchParams } from 'next/navigation';
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
   const clearCart = useCartStore((state) => state.clearCart);
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
@@ -42,7 +42,7 @@ export default function CheckoutSuccessPage() {
               <div>
                 <h3 className="font-semibold mb-1">Email Confirmation</h3>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive an email confirmation with your order details shortly.
+                  You&apos;ll receive an email confirmation with your order details shortly.
                 </p>
               </div>
             </div>
@@ -53,7 +53,7 @@ export default function CheckoutSuccessPage() {
               <div>
                 <h3 className="font-semibold mb-1">Order Processing</h3>
                 <p className="text-sm text-muted-foreground">
-                  We're preparing your items for shipment. This usually takes 1-2 business days.
+                  We&apos;re preparing your items for shipment. This usually takes 1-2 business days.
                 </p>
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function CheckoutSuccessPage() {
               <div>
                 <h3 className="font-semibold mb-1">Shipping Updates</h3>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive tracking information once your order ships.
+                  You&apos;ll receive tracking information once your order ships.
                 </p>
               </div>
             </div>
@@ -108,5 +108,22 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-green-100 mb-6">
+            <CheckCircle className="h-16 w-16 text-green-600" />
+          </div>
+          <h1 className="font-serif text-4xl font-bold mb-4">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }

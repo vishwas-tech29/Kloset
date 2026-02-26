@@ -37,7 +37,7 @@ export default function HoodiesPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <h1 className="font-serif text-4xl font-bold mb-4">Men's Hoodies</h1>
+        <h1 className="font-serif text-4xl font-bold mb-4">Men&apos;s Hoodies</h1>
         <p className="text-muted-foreground text-lg">
           Ultimate comfort meets style in our premium hoodie collection
         </p>

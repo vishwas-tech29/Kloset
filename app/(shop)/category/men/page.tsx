@@ -50,9 +50,9 @@ export default function MenCategoryPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-12 text-center">
-        <h1 className="font-serif text-5xl font-bold mb-4">Men's Collection</h1>
+        <h1 className="font-serif text-5xl font-bold mb-4">Men&apos;s Collection</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Discover premium men's clothing designed for comfort, style, and versatility
+          Discover premium men&apos;s clothing designed for comfort, style, and versatility
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function MenCategoryPage() {
       {/* All Products */}
       <section>
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-serif text-3xl font-bold">All Men's Products</h2>
+          <h2 className="font-serif text-3xl font-bold">All Men&apos;s Products</h2>
           <div className="flex gap-2">
             <select className="px-4 py-2 rounded-lg border border-input bg-background text-sm">
               <option>Sort by: Featured</option>

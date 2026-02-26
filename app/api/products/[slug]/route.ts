@@ -22,15 +22,6 @@ export async function GET(
         },
         reviews: {
           where: { isApproved: true },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
-            },
-          },
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
