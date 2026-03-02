@@ -124,3 +124,75 @@ model Coupon {
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
 }
+
+// AI FEATURES MODELS
+
+// Virtual Try-On Feature
+model TryOnResult {
+  id          String   @id @default(cuid())
+  sessionId   String   // For guest users
+  productId   String
+  productName String
+  userPhoto   String   // Cloudinary URL of user photo
+  garmentImage String  // Product image URL
+  resultImage String   // Cloudinary URL of try-on result
+  category    String
+  createdAt   DateTime @default(now())
+}
+
+// Custom Design Studio
+model CustomDesign {
+  id            String        @id @default(cuid())
+  sessionId     String        // For guest users
+  title         String
+  prompt        String?       // AI prompt used
+  designData    String        // Fabric.js canvas JSON
+  previewImage  String        // Cloudinary URL
+  clothingType  String        // tshirt, hoodie, dress, etc.
+  baseColor     String
+  isPublic      Boolean       @default(false)
+  orders        CustomOrder[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model CustomOrder {
+  id          String       @id @default(cuid())
+  design      CustomDesign @relation(fields: [designId], references: [id])
+  designId    String
+  sessionId   String       // For guest users
+  guestEmail  String
+  guestName   String
+  size        String
+  quantity    Int
+  color       String
+  price       Float
+  status      String       @default("PENDING")
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// AI Fashion Expert
+model StyleProfile {
+  id              String   @id @default(cuid())
+  sessionId       String   @unique // For guest users
+  bodyType        String?
+  preferredStyles String   // JSON array as string
+  favoriteColors  String   // JSON array as string
+  avoidColors     String   // JSON array as string
+  budget          String?  // low, medium, high, luxury
+  occasions       String   // JSON array as string
+  height          Int?     // in cm
+  weight          Int?     // in kg
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ChatHistory {
+  id        String   @id @default(cuid())
+  sessionId String   // For guest users
+  role      String   // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+}

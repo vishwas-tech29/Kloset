@@ -10,8 +10,8 @@ const menuLinks = [
   { href: '/products', label: 'Shop All' },
   { href: '/category/men', label: 'Men' },
   { href: '/category/women', label: 'Women' },
-  { href: '/category/kids', label: 'Kids' },
-  { href: '/category/sale', label: 'Sale', highlight: true },
+  { href: '/category/custom', label: 'Custom' },
+  { href: '/ai-features', label: '✨ AI Features', highlight: true },
 ];
 
 export function MobileMenu() {

@@ -103,14 +103,14 @@ export default function HomePage() {
               image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=800&fit=crop',
             },
             { 
-              name: 'Kids', 
-              href: '/category/kids', 
-              image: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=600&h=800&fit=crop',
+              name: 'Printed', 
+              href: '/category/printed', 
+              image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&h=800&fit=crop',
             },
             { 
-              name: 'Sale', 
-              href: '/category/sale', 
-              image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=600&h=800&fit=crop',
+              name: 'Embroidery', 
+              href: '/category/embroidery', 
+              image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=800&fit=crop',
             },
           ].map((category, i) => (
             <Link
@@ -137,6 +137,69 @@ export default function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* AI Features Section */}
+      <section className="bg-gradient-to-b from-muted/50 to-background py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Sparkles className="h-4 w-4" />
+              <span>Powered by AI</span>
+            </div>
+            <h2 className="font-serif text-4xl font-bold">Shop Smarter with AI</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Experience the future of online shopping with our AI-powered features
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Link href="/try-on" className="group">
+              <div className="p-6 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Virtual Try-On</h3>
+                <p className="text-muted-foreground mb-4">
+                  See how clothes look on you before buying with AI-powered virtual try-on
+                </p>
+                <span className="text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Try Now <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+
+            <Link href="/design-studio" className="group">
+              <div className="p-6 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Design Studio</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create custom designs with AI and order your personalized clothing
+                </p>
+                <span className="text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Coming Soon <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+
+            <Link href="/fashion-expert" className="group">
+              <div className="p-6 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Fashion Expert</h3>
+                <p className="text-muted-foreground mb-4">
+                  Chat with your personal AI stylist for outfit recommendations
+                </p>
+                <span className="text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Coming Soon <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 

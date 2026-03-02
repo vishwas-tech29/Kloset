@@ -38,11 +38,11 @@ export function Navbar() {
               <Link href="/category/women" className="text-sm font-medium hover:text-primary transition-colors">
                 Women
               </Link>
-              <Link href="/category/kids" className="text-sm font-medium hover:text-primary transition-colors">
-                Kids
+              <Link href="/category/custom" className="text-sm font-medium hover:text-primary transition-colors">
+                Custom
               </Link>
-              <Link href="/category/sale" className="text-sm font-medium text-destructive hover:text-destructive/80 transition-colors">
-                Sale
+              <Link href="/ai-features" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                ✨ AI Features
               </Link>
             </div>
           </div>

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Product {
   id: string;
@@ -44,6 +47,26 @@ export default function ProductsPage() {
     }
   }
 
+  async function handleDelete(productId: string) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        alert('Product deleted successfully');
+        loadProducts();
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -62,9 +85,17 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Products</h1>
-        <p className="text-gray-600">Manage your product catalog</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Products</h1>
+          <p className="text-gray-600">Manage your product catalog</p>
+        </div>
+        <Link href="/admin/products/new">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Button>
+        </Link>
       </div>
 
       {/* Stats */}
@@ -115,10 +146,10 @@ export default function ProductsPage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold">{product.name}</h3>
-                    <span className="text-lg font-bold">${product.price}</span>
+                    <span className="text-lg font-bold">₹{product.price.toLocaleString('en-IN')}</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{product.category.name}</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-3">
                     {product.isPublished ? (
                       <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                         Published
@@ -134,9 +165,27 @@ export default function ProductsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-gray-600 mb-3">
                     Stock: {product.variants.reduce((s, v) => s + v.stock, 0)} units
                   </p>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <Link href={`/admin/products/edit?id=${product.id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full gap-2">
+                        <Edit className="h-3 w-3" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(product.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

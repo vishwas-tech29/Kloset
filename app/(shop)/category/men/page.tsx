@@ -43,6 +43,18 @@ const subcategories = [
     image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=500&fit=crop',
     description: 'Perfect for layering',
   },
+  {
+    name: 'Printed',
+    href: '/category/printed',
+    image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=500&fit=crop',
+    description: '3D graphics & modern designs',
+  },
+  {
+    name: 'Embroidery',
+    href: '/category/embroidery',
+    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=500&fit=crop',
+    description: 'Traditional & elegant patterns',
+  },
 ];
 
 export default function MenCategoryPage() {
@@ -59,7 +71,7 @@ export default function MenCategoryPage() {
       {/* Subcategories */}
       <section className="mb-16">
         <h2 className="font-serif text-3xl font-bold mb-8">Shop by Category</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {subcategories.map((subcategory, i) => (
             <Link
               key={subcategory.name}
